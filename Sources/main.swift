@@ -108,8 +108,13 @@ class ContactsManager {
 		}
 	}
 
-	func fetchBirthdaysThisMonth() -> [CNContact] {
-		let currentMonth = Calendar.current.component(.month, from: Date())
+	func fetchBirthdays() -> [CNContact] {
+		let calendar = Calendar.current
+		let today = Date()
+		guard let thirtyDaysLater = calendar.date(byAdding: .day, value: 30, to: today) else {
+			return []
+		}
+
 		let allContacts = fetchAllContacts()
 		let contactsWithBirthdays = allContacts.compactMap {
 			contact -> (contact: CNContact, month: Int, day: Int)? in
@@ -120,8 +125,38 @@ class ContactsManager {
 				return nil
 			}
 			return (contact, month, day)
-		}.filter { $0.month == currentMonth }
-		let sortedContacts = contactsWithBirthdays.sorted {
+		}
+
+		let currentMonth = calendar.component(.month, from: today)
+		let currentDay = calendar.component(.day, from: today)
+		// let currentYear = calendar.component(.year, from: today)
+
+		let thirtyDaysLaterMonth = calendar.component(.month, from: thirtyDaysLater)
+		let thirtyDaysLaterDay = calendar.component(.day, from: thirtyDaysLater)
+
+		let filteredContacts = contactsWithBirthdays.filter { item in
+			let month = item.month
+			let day = item.day
+
+			if month == currentMonth {
+				return day >= currentDay
+			}
+			else if month > currentMonth && month < thirtyDaysLaterMonth {
+				return true
+			}
+			else if month == thirtyDaysLaterMonth {
+				return day <= thirtyDaysLaterDay
+			}
+			else if currentMonth == 12 && month <= thirtyDaysLaterMonth {
+				return day <= thirtyDaysLaterDay
+			}
+			return false
+		}
+
+		let sortedContacts = filteredContacts.sorted {
+			if $0.month != $1.month {
+				return $0.month < $1.month
+			}
 			if $0.day != $1.day {
 				return $0.day < $1.day
 			}
@@ -225,7 +260,7 @@ if args.aercMode {
 	let contacts = manager.fetchAllContacts()
 	manager.printContactsForAerc(contacts, query: args.aercQuery)
 } else if args.birthdaysThisMonth {
-	let contacts = manager.fetchBirthdaysThisMonth()
+	let contacts = manager.fetchBirthdays()
 	let now = Date()
 	let currentMonth = Calendar.current.component(.month, from: now)
 	let currentYear = Calendar.current.component(.year, from: now)
