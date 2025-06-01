@@ -28,5 +28,5 @@ Examples:
 
 ```
 [compose]
-address-book-cmd=contacts %s
+address-book-cmd=contacts --aerc %s
 ```
