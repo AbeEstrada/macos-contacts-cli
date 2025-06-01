@@ -140,14 +140,11 @@ class ContactsManager {
 
 			if month == currentMonth {
 				return day >= currentDay
-			}
-			else if month > currentMonth && month < thirtyDaysLaterMonth {
+			} else if month > currentMonth && month < thirtyDaysLaterMonth {
 				return true
-			}
-			else if month == thirtyDaysLaterMonth {
+			} else if month == thirtyDaysLaterMonth {
 				return day <= thirtyDaysLaterDay
-			}
-			else if currentMonth == 12 && month <= thirtyDaysLaterMonth {
+			} else if currentMonth == 12 && month <= thirtyDaysLaterMonth {
 				return day <= thirtyDaysLaterDay
 			}
 			return false
@@ -170,6 +167,8 @@ class ContactsManager {
 
 	private func birthdayFormatter(birthday: DateComponents) -> String {
 		var parts = [String]()
+		let calendar = Calendar.current
+		let today = Date()
 		if let month = birthday.month, let day = birthday.day {
 			let dateFormatter = DateFormatter()
 			dateFormatter.dateFormat = "MMMM"
@@ -177,7 +176,13 @@ class ContactsManager {
 			parts.append("\(day) \(monthName)")
 		}
 		if let year = birthday.year {
-			parts.append("\(year)")
+			let ageComponents = calendar.dateComponents(
+				[.year], from: calendar.date(from: birthday)!, to: today)
+			if let age = ageComponents.year {
+				parts.append("\(year) (\(age))")
+			} else {
+				parts.append("\(year)")
+			}
 		}
 		return parts.joined(separator: " ")
 	}
