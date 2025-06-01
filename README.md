@@ -23,3 +23,10 @@ Examples:
   contacts --aerc
   contacts --aerc "john"
 ```
+
+## aerc
+
+```
+[compose]
+address-book-cmd=contacts %s
+```
