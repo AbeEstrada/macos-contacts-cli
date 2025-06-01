@@ -65,9 +65,10 @@ class ContactsManager {
 			let fullName = "\(contact.givenName) \(contact.familyName)".trimmingCharacters(
 				in: .whitespaces)
 			print("\(fullName)")
-			if showBirthdays, let birthday = contact.birthday {
+			if let birthday = contact.birthday {
 				print("\(birthdayFormatter(birthday: birthday))")
-			} else {
+			}
+			if !showBirthdays {
 				if !contact.phoneNumbers.isEmpty {
 					for phone in contact.phoneNumbers {
 						print(
