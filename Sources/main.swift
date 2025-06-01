@@ -184,12 +184,12 @@ class ContactsManager {
 }
 
 func parseArguments() -> (
-	listAll: Bool, searchQuery: String?, birthdaysThisMonth: Bool, aercMode: Bool,
+	listAll: Bool, searchQuery: String?, birthdays: Bool, aercMode: Bool,
 	aercQuery: String?
 ) {
 	var listAll = false
 	var searchQuery: String? = nil
-	var birthdaysThisMonth = false
+	var birthdays = false
 	var aercMode = false
 	var aercQuery: String? = nil
 
@@ -209,7 +209,7 @@ func parseArguments() -> (
 		} else if argument.hasPrefix("-s=") {
 			searchQuery = String(argument.dropFirst("-s=".count))
 		} else if argument == "--birthdays" || argument == "-b" {
-			birthdaysThisMonth = true
+			birthdays = true
 		} else if argument == "--aerc" || argument == "-a" {
 			aercMode = true
 			if i + 1 < CommandLine.arguments.count {
@@ -219,7 +219,7 @@ func parseArguments() -> (
 		}
 		i += 1
 	}
-	return (listAll, searchQuery, birthdaysThisMonth, aercMode, aercQuery)
+	return (listAll, searchQuery, birthdays, aercMode, aercQuery)
 }
 
 func printUsage() {
@@ -259,7 +259,7 @@ let args = parseArguments()
 if args.aercMode {
 	let contacts = manager.fetchAllContacts()
 	manager.printContactsForAerc(contacts, query: args.aercQuery)
-} else if args.birthdaysThisMonth {
+} else if args.birthdays {
 	let contacts = manager.fetchBirthdays()
 	let now = Date()
 	let currentMonth = Calendar.current.component(.month, from: now)
