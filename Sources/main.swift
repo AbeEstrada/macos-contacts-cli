@@ -267,13 +267,7 @@ if args.aercMode {
 	manager.printContactsForAerc(contacts, query: args.aercQuery)
 } else if args.birthdays {
 	let contacts = manager.fetchBirthdays()
-	let now = Date()
-	let currentMonth = Calendar.current.component(.month, from: now)
-	let currentYear = Calendar.current.component(.year, from: now)
-	let dateFormatter = DateFormatter()
-	dateFormatter.dateFormat = "MMMM"
-	let monthName = dateFormatter.monthSymbols[currentMonth - 1]
-	print("Birthdays - \(monthName) \(currentYear)\n")
+	print("Birthdays\n")
 	manager.printContacts(contacts, showBirthdays: true)
 } else if args.listAll {
 	let contacts = manager.fetchAllContacts()
