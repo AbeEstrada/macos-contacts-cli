@@ -18,7 +18,7 @@ Short options:
   contacts -s <query>         Short form for --search
   contacts -b                 Short form for --birthdays
   contacts -a [query]         Short form for --aerc
-  contacts -h                Short form for --help
+  contacts -h                 Short form for --help
 
 Examples:
   contacts John
