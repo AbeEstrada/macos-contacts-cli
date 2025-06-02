@@ -191,19 +191,22 @@ class ContactsManager {
 
 func parseArguments() -> (
 	listAll: Bool, searchQuery: String?, birthdays: Bool, aercMode: Bool,
-	aercQuery: String?
+	aercQuery: String?, showHelp: Bool
 ) {
 	var listAll = false
 	var searchQuery: String? = nil
 	var birthdays = false
 	var aercMode = false
 	var aercQuery: String? = nil
+	var showHelp = false
 
 	var i = 1
 	while i < CommandLine.arguments.count {
 		let argument = CommandLine.arguments[i]
 
-		if argument == "--list" || argument == "-l" {
+		if argument == "--help" || argument == "-h" {
+			showHelp = true
+		} else if argument == "--list" || argument == "-l" {
 			listAll = true
 		} else if argument == "--search" || argument == "-s" {
 			if i + 1 < CommandLine.arguments.count {
@@ -222,10 +225,12 @@ func parseArguments() -> (
 				aercQuery = CommandLine.arguments[i + 1]
 				i += 1
 			}
+		} else if i == 1 && !argument.starts(with: "-") {
+			searchQuery = argument
 		}
 		i += 1
 	}
-	return (listAll, searchQuery, birthdays, aercMode, aercQuery)
+	return (listAll, searchQuery, birthdays, aercMode, aercQuery, showHelp)
 }
 
 func printUsage() {
@@ -234,16 +239,22 @@ func printUsage() {
 		Contacts
 
 		Usage:
+		  contacts <query>            Search contacts by name
 		  contacts --list             List all contacts
 		  contacts --search <query>   Search contacts by name
 		  contacts --birthdays        List contacts with birthdays this month
 		  contacts --aerc [query]     List contacts in aerc format, optionally filtered by query
+		  contacts --help             Show this help message
+		  
+		Short options:
 		  contacts -l                 Short form for --list
 		  contacts -s <query>         Short form for --search
 		  contacts -b                 Short form for --birthdays
 		  contacts -a [query]         Short form for --aerc
+		  contacts -h                Short form for --help
 
 		Examples:
+		  contacts John
 		  contacts --list
 		  contacts --birthdays
 		  contacts --search "John"
@@ -262,7 +273,9 @@ guard manager.requestAccess() else {
 
 let args = parseArguments()
 
-if args.aercMode {
+if args.showHelp {
+	printUsage()
+} else if args.aercMode {
 	let contacts = manager.fetchAllContacts()
 	manager.printContactsForAerc(contacts, query: args.aercQuery)
 } else if args.birthdays {
