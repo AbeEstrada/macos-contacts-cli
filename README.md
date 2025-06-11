@@ -13,6 +13,8 @@ This project uses [just](https://github.com/casey/just) as a command runner and 
 - `just uninstall` - Remove the installed binary
 - `just clean` - Clean the Swift package build artifacts
 
+## Usage
+
 ```
 Contacts
 
