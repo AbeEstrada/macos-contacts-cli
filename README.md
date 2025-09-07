@@ -23,6 +23,7 @@ Usage:
   contacts --list             List all contacts
   contacts --search <query>   Search contacts by name
   contacts --birthdays        List contacts with birthdays this month
+  contacts --duplicates       Find duplicate contacts
   contacts --aerc [query]     List contacts in aerc format, optionally filtered by query
   contacts --help             Show this help message
 
@@ -30,6 +31,7 @@ Short options:
   contacts -l                 Short form for --list
   contacts -s <query>         Short form for --search
   contacts -b                 Short form for --birthdays
+  contacts -d                 Short form for --duplicates
   contacts -a [query]         Short form for --aerc
   contacts -h                 Short form for --help
 
@@ -37,6 +39,7 @@ Examples:
   contacts John
   contacts --list
   contacts --birthdays
+  contacts --duplicates
   contacts --search "John"
   contacts -s "john@example.com"
   contacts --aerc
