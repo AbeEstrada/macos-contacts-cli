@@ -55,6 +55,75 @@ class ContactsManager {
     }
   }
 
+  func findDuplicates() -> [(String, [CNContact])] {
+    let contacts = fetchAllContacts()
+    var duplicates: [(String, [CNContact])] = []
+    var emailGroups: [String: [CNContact]] = [:]
+    var phoneGroups: [String: [CNContact]] = [:]
+    var nameGroups: [String: [CNContact]] = [:]
+    for contact in contacts {
+      for email in contact.emailAddresses {
+        let emailString = (email.value as String).lowercased().trimmingCharacters(in: .whitespaces)
+        if !emailString.isEmpty {
+          emailGroups[emailString, default: []].append(contact)
+        }
+      }
+      var seenPhones = Set<String>()
+      for phone in contact.phoneNumbers {
+        let phoneString = phone.value.stringValue.components(
+          separatedBy: CharacterSet.decimalDigits.inverted
+        ).joined()
+        if phoneString.count >= 10 {
+          let normalizedPhone = String(phoneString.suffix(10))
+          if !seenPhones.contains(normalizedPhone) {
+            seenPhones.insert(normalizedPhone)
+            phoneGroups[normalizedPhone, default: []].append(contact)
+          }
+        }
+      }
+      let fullName = "\(contact.givenName) \(contact.familyName)".trimmingCharacters(
+        in: .whitespaces
+      ).lowercased()
+      if !fullName.isEmpty && fullName != " " {
+        nameGroups[fullName, default: []].append(contact)
+      }
+    }
+    for (email, contacts) in emailGroups where contacts.count > 1 {
+      duplicates.append(("Email: \(email)", contacts))
+    }
+    for (phone, contacts) in phoneGroups where contacts.count > 1 {
+      duplicates.append(("Phone: \(phone)", contacts))
+    }
+    for (name, contacts) in nameGroups where contacts.count > 1 {
+      duplicates.append(("Name: \(name)", contacts))
+    }
+    return duplicates
+  }
+
+  func printDuplicates() {
+    let duplicates = findDuplicates()
+    if duplicates.isEmpty {
+      print("No duplicates found.")
+      return
+    }
+    print("Found \(duplicates.count) duplicate groups:\n")
+    for (reason, contacts) in duplicates {
+      print("Duplicate \(reason):")
+      for contact in contacts {
+        let fullName = "\(contact.givenName) \(contact.familyName)".trimmingCharacters(
+          in: .whitespaces)
+        print("- \(fullName)")
+        for email in contact.emailAddresses {
+          print("    Email: \(email.value)")
+        }
+        for phone in contact.phoneNumbers {
+          print("    Phone: \(phone.value.stringValue)")
+        }
+      }
+      print("")
+    }
+  }
+
   func printContacts(_ contacts: [CNContact], showBirthdays: Bool = false) {
     if contacts.isEmpty {
       print("No contacts found.")
@@ -191,13 +260,14 @@ class ContactsManager {
 
 func parseArguments() -> (
   listAll: Bool, searchQuery: String?, birthdays: Bool, aercMode: Bool,
-  aercQuery: String?, showHelp: Bool
+  aercQuery: String?, duplicates: Bool, showHelp: Bool
 ) {
   var listAll = false
   var searchQuery: String? = nil
   var birthdays = false
   var aercMode = false
   var aercQuery: String? = nil
+  var duplicates = false
   var showHelp = false
 
   var i = 1
@@ -219,6 +289,8 @@ func parseArguments() -> (
       searchQuery = String(argument.dropFirst("-s=".count))
     } else if argument == "--birthdays" || argument == "-b" {
       birthdays = true
+    } else if argument == "--duplicates" || argument == "-d" {
+      duplicates = true
     } else if argument == "--aerc" || argument == "-a" {
       aercMode = true
       if i + 1 < CommandLine.arguments.count {
@@ -230,7 +302,7 @@ func parseArguments() -> (
     }
     i += 1
   }
-  return (listAll, searchQuery, birthdays, aercMode, aercQuery, showHelp)
+  return (listAll, searchQuery, birthdays, aercMode, aercQuery, duplicates, showHelp)
 }
 
 func printUsage() {
@@ -243,6 +315,7 @@ func printUsage() {
       contacts --list             List all contacts
       contacts --search <query>   Search contacts by name
       contacts --birthdays        List contacts with birthdays this month
+      contacts --duplicates       Find duplicate contacts
       contacts --aerc [query]     List contacts in aerc format, optionally filtered by query
       contacts --help             Show this help message
       
@@ -250,6 +323,7 @@ func printUsage() {
       contacts -l                 Short form for --list
       contacts -s <query>         Short form for --search
       contacts -b                 Short form for --birthdays
+      contacts -d                 Short form for --duplicates
       contacts -a [query]         Short form for --aerc
       contacts -h                 Short form for --help
 
@@ -257,6 +331,7 @@ func printUsage() {
       contacts John
       contacts --list
       contacts --birthdays
+      contacts --duplicates
       contacts --search "John"
       contacts -s "john@example.com"
       contacts --aerc
@@ -278,6 +353,8 @@ if args.showHelp {
 } else if args.aercMode {
   let contacts = manager.fetchAllContacts()
   manager.printContactsForAerc(contacts, query: args.aercQuery)
+} else if args.duplicates {
+  manager.printDuplicates()
 } else if args.birthdays {
   let contacts = manager.fetchBirthdays()
   print("Birthdays\n")
